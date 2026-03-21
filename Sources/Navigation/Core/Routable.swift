@@ -1,6 +1,6 @@
 import SwiftUI
 
-public protocol Routable: Hashable, Identifiable {
+public protocol Routable: Hashable, Identifiable, Sendable {
     associatedtype Body: View
     @ViewBuilder var destination: Body { get }
 }

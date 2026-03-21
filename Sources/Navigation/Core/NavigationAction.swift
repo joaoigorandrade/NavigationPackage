@@ -1,6 +1,6 @@
 import Foundation
 
-public enum NavigationAction<Route: Routable>: Sendable where Route: Sendable {
+public enum NavigationAction<Route: Routable>: Sendable {
     case push(Route)
     case pushMultiple([Route])
     case pop

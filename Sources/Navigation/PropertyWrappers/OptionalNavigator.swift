@@ -13,7 +13,7 @@ public struct OptionalNavigator<Route: Routable>: DynamicProperty {
 }
 
 private struct OptionalNavigatorKey: EnvironmentKey {
-    static let defaultValue: AnyObject? = nil
+    nonisolated(unsafe) static let defaultValue: AnyObject? = nil
 }
 
 extension EnvironmentValues {

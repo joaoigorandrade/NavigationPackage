@@ -2,6 +2,7 @@ import SwiftUI
 
 public struct NavigationStackWrapper<Route: Routable, Root: View>: View {
     @ObservedObject var navigator: Navigator<Route>
+    @Namespace private var transitionNS
     let root: () -> Root
 
     public init(
@@ -19,7 +20,9 @@ public struct NavigationStackWrapper<Route: Routable, Root: View>: View {
                     LazyDestination {
                         route.destination
                     }
+                    .environment(\.transitionNamespace, transitionNS)
                 }
+                .environment(\.transitionNamespace, transitionNS)
         }
     }
 }
