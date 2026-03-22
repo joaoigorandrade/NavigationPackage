@@ -20,6 +20,7 @@ public struct NavigationStackWrapper<Route: Routable, Root: View>: View {
                     LazyDestination {
                         route.destination
                     }
+                    .environmentObject(navigator)
                     .environment(\.transitionNamespace, transitionNS)
                 }
                 .environment(\.transitionNamespace, transitionNS)
