@@ -50,7 +50,7 @@ extension View {
         store: NavigationStateStore<Route>,
         navigator: Navigator<Route>
     ) -> some View {
-        self.onChange(of: navigator.routeStack.count) { _ in
+        self.onChange(of: navigator.routeStack.count) { _, _ in
             if store.policy == .always {
                 store.saveState(of: navigator)
             }
