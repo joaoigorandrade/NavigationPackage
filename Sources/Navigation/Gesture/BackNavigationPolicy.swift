@@ -27,15 +27,17 @@ struct BackNavigationPolicyModifier<Route: Routable>: ViewModifier {
             content
                 .navigationBarBackButtonHidden(true)
                 .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button {
-                            if condition() {
-                                navigator.pop()
-                            }
-                        } label: {
-                            HStack(spacing: 4) {
-                                Image(systemName: "chevron.left")
-                                Text("Back")
+                    if navigator.canPop() {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button {
+                                if condition() {
+                                    navigator.pop()
+                                }
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "chevron.left")
+                                    Text("Back")
+                                }
                             }
                         }
                     }
@@ -45,14 +47,16 @@ struct BackNavigationPolicyModifier<Route: Routable>: ViewModifier {
             content
                 .navigationBarBackButtonHidden(true)
                 .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button {
-                            confirmationMessage = message
-                            showConfirmation = true
-                        } label: {
-                            HStack(spacing: 4) {
-                                Image(systemName: "chevron.left")
-                                Text("Back")
+                    if navigator.canPop() {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button {
+                                confirmationMessage = message
+                                showConfirmation = true
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "chevron.left")
+                                    Text("Back")
+                                }
                             }
                         }
                     }

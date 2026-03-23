@@ -20,6 +20,7 @@ public struct NavigationStackWrapper<Route: Routable, Root: View>: View {
                     LazyDestination {
                         route.destination
                     }
+                    .navigationBarBackButtonHidden(navigator.depth <= 1)
                     .environmentObject(navigator)
                     .environment(\.transitionNamespace, transitionNS)
                 }
