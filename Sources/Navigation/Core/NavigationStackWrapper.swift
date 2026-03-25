@@ -14,7 +14,7 @@ public struct NavigationStackWrapper<Route: Routable, Root: View>: View {
     }
 
     public var body: some View {
-        NavigationStack(path: $navigator.path) {
+        NavigationStack(path: pathBinding) {
             root()
                 .navigationDestination(for: Route.self) { route in
                     LazyDestination {
@@ -26,5 +26,29 @@ public struct NavigationStackWrapper<Route: Routable, Root: View>: View {
                 }
                 .environment(\.transitionNamespace, transitionNS)
         }
+        .sheet(item: sheetBinding) { route in
+            route.destination
+                .presentationSizing(.fitted)
+                .environmentObject(navigator)
+                .environment(\.transitionNamespace, transitionNS)
+        }
+    }
+
+    private var pathBinding: Binding<NavigationPath> {
+        Binding(
+            get: { navigator.path },
+            set: { navigator.syncPathFromNavigationStack($0) }
+        )
+    }
+
+    private var sheetBinding: Binding<Route?> {
+        Binding(
+            get: { navigator.activeSheet },
+            set: { newValue in
+                if newValue == nil {
+                    navigator.dismissSheet()
+                }
+            }
+        )
     }
 }

@@ -24,6 +24,7 @@ enum AppRoute: Routable {
     case home
     case profile(userId: String)
     case settings
+    case contactSupport
 
     @ViewBuilder
     var destination: some View {
@@ -34,6 +35,8 @@ enum AppRoute: Routable {
             ProfileView(userId: userId)
         case .settings:
             SettingsView()
+        case .contactSupport:
+            ContactSupportView()
         }
     }
 }
@@ -75,6 +78,9 @@ struct HomeView: View {
             Button("Settings") {
                 navigator.navigate(to: .settings)
             }
+            Button("Contact Support") {
+                navigator.openSheet(.contactSupport)
+            }
         }
     }
 }
@@ -91,6 +97,8 @@ navigator.popToRoot()                        // Pop all
 navigator.popTo(.home)                       // Pop to specific route
 navigator.replace(with: [.home, .settings])  // Replace entire stack
 navigator.reset()                            // Clear stack and history
+navigator.openSheet(.contactSupport)         // Open route as sheet
+navigator.dismissSheet()                     // Dismiss current sheet
 ```
 
 ## Inspect the Stack

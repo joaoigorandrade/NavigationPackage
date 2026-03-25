@@ -158,4 +158,60 @@ struct NavigatorTests {
         #expect(navigator.isEmpty)
         #expect(navigator.history.isEmpty)
     }
+
+    @MainActor
+    @Test("Syncing a system pop keeps typed stack in sync")
+    func syncSystemPop() {
+        let navigator = Navigator<MockRoute>()
+        navigator.navigate(to: [.home, .settings])
+
+        var updatedPath = navigator.path
+        updatedPath.removeLast()
+        navigator.syncPathFromNavigationStack(updatedPath)
+
+        #expect(navigator.depth == 1)
+        #expect(navigator.currentRoute == .home)
+    }
+
+    @MainActor
+    @Test("OpenSheet sets activeSheet and presentation state")
+    func openSheet() {
+        let navigator = Navigator<MockRoute>()
+        navigator.openSheet(.settings)
+        #expect(navigator.activeSheet == .settings)
+        #expect(navigator.isSheetPresented)
+    }
+
+    @MainActor
+    @Test("OpenSheet replaces current sheet")
+    func openSheetReplacesCurrent() {
+        let navigator = Navigator<MockRoute>()
+        navigator.openSheet(.home)
+        navigator.openSheet(.detail(id: 10))
+        #expect(navigator.activeSheet == .detail(id: 10))
+        #expect(navigator.isSheetPresented)
+    }
+
+    @MainActor
+    @Test("DismissSheet clears sheet state")
+    func dismissSheet() {
+        let navigator = Navigator<MockRoute>()
+        navigator.openSheet(.settings)
+        navigator.dismissSheet()
+        #expect(navigator.activeSheet == nil)
+        #expect(!navigator.isSheetPresented)
+    }
+
+    @MainActor
+    @Test("Push and pop still work while sheet is presented")
+    func pushPopWithSheetPresented() {
+        let navigator = Navigator<MockRoute>()
+        navigator.navigate(to: .home)
+        navigator.openSheet(.settings)
+        navigator.navigate(to: .detail(id: 42))
+        navigator.pop()
+        #expect(navigator.currentRoute == .home)
+        #expect(navigator.depth == 1)
+        #expect(navigator.activeSheet == .settings)
+    }
 }

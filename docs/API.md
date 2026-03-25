@@ -32,10 +32,11 @@ Protocol for tab definitions.
 
 **Properties:**
 - `path: NavigationPath` — bound to NavigationStack
+- `activeSheet: Route?` — currently presented sheet route
 - `routeStack: TypedNavigationPath<Route>` — typed shadow stack (read-only)
 - `history: [NavigationEvent<Route>]` — event log (read-only)
 - `maxHistoryDepth: Int` — configurable limit
-- `depth: Int`, `currentRoute: Route?`, `isEmpty: Bool`
+- `depth: Int`, `currentRoute: Route?`, `isEmpty: Bool`, `isSheetPresented: Bool`
 
 **Methods:**
 - `navigate(to:)`, `navigate(to: [Route])`
@@ -43,6 +44,7 @@ Protocol for tab definitions.
 - `popToRoot()`, `popTo(_:) -> Bool`
 - `replace(with:)`, `reset()`
 - `canPop() -> Bool`
+- `openSheet(_:)`, `dismissSheet()`
 
 ### ModalNavigator\<Route: ModalRoute\>
 `@MainActor ObservableObject` — modal state manager.
