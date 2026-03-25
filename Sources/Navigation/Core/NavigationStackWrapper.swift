@@ -28,7 +28,7 @@ public struct NavigationStackWrapper<Route: Routable, Root: View>: View {
         }
         .sheet(item: sheetBinding) { route in
             route.destination
-                .presentationSizing(.fitted)
+                .modifier(SelfSizingSheetModifier())
                 .environmentObject(navigator)
                 .environment(\.transitionNamespace, transitionNS)
         }
