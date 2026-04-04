@@ -160,20 +160,6 @@ struct NavigatorTests {
     }
 
     @MainActor
-    @Test("Syncing a system pop keeps typed stack in sync")
-    func syncSystemPop() {
-        let navigator = Navigator<MockRoute>()
-        navigator.navigate(to: [.home, .settings])
-
-        var updatedPath = navigator.path
-        updatedPath.removeLast()
-        navigator.syncPathFromNavigationStack(updatedPath)
-
-        #expect(navigator.depth == 1)
-        #expect(navigator.currentRoute == .home)
-    }
-
-    @MainActor
     @Test("OpenSheet sets activeSheet and presentation state")
     func openSheet() {
         let navigator = Navigator<MockRoute>()

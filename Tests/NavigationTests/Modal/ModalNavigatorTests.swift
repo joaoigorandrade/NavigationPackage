@@ -2,65 +2,72 @@ import Testing
 import SwiftUI
 @testable import Navigation
 
-@Suite("ModalNavigator")
-struct ModalNavigatorTests {
+@Suite("Navigator Modal Presentation")
+struct NavigatorModalTests {
     @MainActor
     @Test("Initial state has no modals")
     func initialState() {
-        let navigator = ModalNavigator<MockModalRoute>()
-        #expect(!navigator.isPresenting)
-        #expect(navigator.currentModal == nil)
-        #expect(navigator.modalStack.isEmpty)
+        let navigator = Navigator<MockModalRoute>()
+        #expect(!navigator.isAnyModalPresented)
+        #expect(!navigator.isSheetPresented)
+        #expect(!navigator.isFullScreenCoverPresented)
     }
 
     @MainActor
-    @Test("Present sheet sets activeSheet")
+    @Test("present(.sheet) sets activeSheet")
     func presentSheet() {
-        let navigator = ModalNavigator<MockModalRoute>()
+        let navigator = Navigator<MockModalRoute>()
         navigator.present(.alert)
         #expect(navigator.activeSheet == .alert)
-        #expect(navigator.activeFullScreen == nil)
-        #expect(navigator.isPresenting)
-        #expect(navigator.modalStack.count == 1)
+        #expect(navigator.activeFullScreenCover == nil)
+        #expect(navigator.isSheetPresented)
     }
 
     @MainActor
-    @Test("Present fullscreen sets activeFullScreen")
+    @Test("present(.fullScreenCover) sets activeFullScreenCover")
     func presentFullScreen() {
-        let navigator = ModalNavigator<MockModalRoute>()
+        let navigator = Navigator<MockModalRoute>()
         navigator.present(.fullScreenDetail)
-        #expect(navigator.activeFullScreen == .fullScreenDetail)
+        #expect(navigator.activeFullScreenCover == .fullScreenDetail)
         #expect(navigator.activeSheet == nil)
-        #expect(navigator.isPresenting)
+        #expect(navigator.isFullScreenCoverPresented)
     }
 
     @MainActor
-    @Test("Dismiss removes current modal")
-    func dismiss() {
-        let navigator = ModalNavigator<MockModalRoute>()
-        navigator.present(.alert)
+    @Test("dismiss() removes fullScreenCover first")
+    func dismissFullScreenFirst() {
+        let navigator = Navigator<MockModalRoute>()
+        navigator.openFullScreenCover(.fullScreenDetail)
         navigator.dismiss()
-        #expect(!navigator.isPresenting)
-        #expect(navigator.modalStack.isEmpty)
+        #expect(!navigator.isAnyModalPresented)
     }
 
     @MainActor
-    @Test("DismissAll clears everything")
+    @Test("dismiss() falls through to sheet when no fullScreenCover")
+    func dismissSheetFallthrough() {
+        let navigator = Navigator<MockModalRoute>()
+        navigator.openSheet(.alert)
+        navigator.dismiss()
+        #expect(!navigator.isSheetPresented)
+    }
+
+    @MainActor
+    @Test("dismissAllModals clears both surfaces")
     func dismissAll() {
-        let navigator = ModalNavigator<MockModalRoute>()
-        navigator.present(.alert)
-        navigator.present(.detail(id: 1))
-        navigator.dismissAll()
-        #expect(!navigator.isPresenting)
-        #expect(navigator.modalStack.isEmpty)
+        let navigator = Navigator<MockModalRoute>()
+        navigator.openSheet(.alert)
+        navigator.openFullScreenCover(.fullScreenDetail)
+        navigator.dismissAllModals()
+        #expect(!navigator.isAnyModalPresented)
     }
 
     @MainActor
-    @Test("CurrentModal returns last presented")
-    func currentModal() {
-        let navigator = ModalNavigator<MockModalRoute>()
-        navigator.present(.alert)
-        navigator.present(.detail(id: 5))
-        #expect(navigator.currentModal == .detail(id: 5))
+    @Test("openSheet and openFullScreenCover are independent")
+    func independentSurfaces() {
+        let navigator = Navigator<MockModalRoute>()
+        navigator.openSheet(.alert)
+        navigator.openFullScreenCover(.fullScreenDetail)
+        #expect(navigator.activeSheet == .alert)
+        #expect(navigator.activeFullScreenCover == .fullScreenDetail)
     }
 }
