@@ -12,6 +12,7 @@ extension View {
             )) { route in
                 route.destination
                     .environmentObject(navigator)
+                    .modifier(SelfSizingSheetModifier())
             }
             #if os(iOS)
             .fullScreenCover(item: Binding(
