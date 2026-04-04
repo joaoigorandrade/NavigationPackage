@@ -10,14 +10,13 @@ Navigation is a protocol-based navigation framework built on SwiftUI's `Navigati
 
 Instead of a pre-built `Route` enum, the package defines a `Routable` protocol. This keeps the API decoupled from application-specific navigation logic and lets the compiler enforce type safety.
 
-### Dual-Tracked Path
+### Typed Path
 
-`Navigator` maintains two parallel representations of the navigation stack:
+`Navigator` maintains a single typed stack:
 
-- **`NavigationPath`** (SwiftUI's type-erased path) for binding to `NavigationStack`
-- **`TypedNavigationPath<Route>`** (typed shadow stack) for programmatic inspection, history, and serialization
+- **`[Route]`** is bound directly to `NavigationStack(path:)` and used for inspection, history, and serialization.
 
-All mutations go through `Navigator` methods to keep both in sync.
+All mutations go through `Navigator` methods.
 
 ### ObservableObject Pattern
 
@@ -33,7 +32,7 @@ iOS 16 baseline requires `ObservableObject` + `@Published` (not `@Observable` wh
 
 ```
 Core/        - Routable protocol, Navigator, NavigationStackWrapper
-Path/        - TypedNavigationPath, PathEncoder (serialization)
+Path/        - PathEncoder (serialization)
 DeepLink/    - URLRoutable, DeepLinkHandler, pattern matching
 Modal/       - ModalNavigator, ModalRoute, presentation styles
 Tab/         - TabNavigator, TabRoute
@@ -50,7 +49,7 @@ URL arrives via onOpenURL
     -> DeepLinkHandler.handle(url:)
     -> Returns Route
     -> Navigator.navigate(to:) or Navigator.replace(with:)
-    -> NavigationPath updated (triggers SwiftUI re-render)
+    -> Navigator.path updated (triggers SwiftUI re-render)
     -> NavigationEvent logged to history
     -> NavigationStateStore.save() (if policy allows)
 ```

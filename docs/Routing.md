@@ -11,7 +11,7 @@ public protocol Routable: Hashable, Identifiable {
 }
 ```
 
-- **Hashable**: Required by `NavigationPath` for identity
+- **Hashable**: Required by `NavigationStack(path:)` for identity
 - **Identifiable**: Required for SwiftUI list/ForEach usage (default `id` uses `hashValue`)
 - **destination**: The view to render when this route is active
 

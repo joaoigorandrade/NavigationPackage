@@ -31,9 +31,8 @@ Protocol for tab definitions.
 `@MainActor ObservableObject` — the central router.
 
 **Properties:**
-- `path: NavigationPath` — bound to NavigationStack
+- `path: [Route]` — typed stack bound to NavigationStack
 - `activeSheet: Route?` — currently presented sheet route
-- `routeStack: TypedNavigationPath<Route>` — typed shadow stack (read-only)
 - `history: [NavigationEvent<Route>]` — event log (read-only)
 - `maxHistoryDepth: Int` — configurable limit
 - `depth: Int`, `currentRoute: Route?`, `isEmpty: Bool`, `isSheetPresented: Bool`
