@@ -14,7 +14,7 @@ public struct NavigationStackWrapper<Route: Routable, Root: View>: View {
     }
 
     public var body: some View {
-        NavigationStack(path: pathBinding) {
+        NavigationStack(path: $navigator.path) {
             root()
                 .navigationDestination(for: Route.self) { route in
                     LazyDestination {
@@ -32,13 +32,13 @@ public struct NavigationStackWrapper<Route: Routable, Root: View>: View {
                 .environmentObject(navigator)
                 .environment(\.transitionNamespace, transitionNS)
         }
-    }
-
-    private var pathBinding: Binding<NavigationPath> {
-        Binding(
-            get: { navigator.path },
-            set: { navigator.syncPathFromNavigationStack($0) }
-        )
+        #if os(iOS)
+        .fullScreenCover(item: fullScreenCoverBinding) { route in
+            route.destination
+                .environmentObject(navigator)
+                .environment(\.transitionNamespace, transitionNS)
+        }
+        #endif
     }
 
     private var sheetBinding: Binding<Route?> {
@@ -47,6 +47,17 @@ public struct NavigationStackWrapper<Route: Routable, Root: View>: View {
             set: { newValue in
                 if newValue == nil {
                     navigator.dismissSheet()
+                }
+            }
+        )
+    }
+
+    private var fullScreenCoverBinding: Binding<Route?> {
+        Binding(
+            get: { navigator.activeFullScreenCover },
+            set: { newValue in
+                if newValue == nil {
+                    navigator.dismissFullScreenCover()
                 }
             }
         )

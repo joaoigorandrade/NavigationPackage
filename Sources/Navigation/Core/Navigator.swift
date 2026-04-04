@@ -2,91 +2,88 @@ import SwiftUI
 
 @MainActor
 public final class Navigator<Route: Routable>: ObservableObject {
-    @Published public var path = NavigationPath()
+    @Published public var path: [Route] = []
     @Published public var activeSheet: Route?
-    @Published public private(set) var routeStack = TypedNavigationPath<Route>()
+    @Published public var activeFullScreenCover: Route?
     @Published public private(set) var history: [NavigationEvent<Route>] = []
 
     public var maxHistoryDepth: Int
 
-    public var depth: Int { routeStack.count }
-    public var currentRoute: Route? { routeStack.current }
-    public var isEmpty: Bool { routeStack.isEmpty }
+    public var depth: Int { path.count }
+    public var currentRoute: Route? { path.last }
+    public var isEmpty: Bool { path.isEmpty }
     public var isSheetPresented: Bool { activeSheet != nil }
+    public var isFullScreenCoverPresented: Bool { activeFullScreenCover != nil }
+    public var isAnyModalPresented: Bool { activeSheet != nil || activeFullScreenCover != nil }
 
     public init(maxHistoryDepth: Int = 100) {
         self.maxHistoryDepth = maxHistoryDepth
     }
 
-    public func navigate(to route: Route) {
+    public func navigate(to route: Route, dismissModals: Bool = true) {
+        if dismissModals { dismissAllModals() }
         let previousDepth = depth
         path.append(route)
-        routeStack.push(route)
         recordEvent(.push(route), previousDepth: previousDepth)
     }
 
-    public func navigate(to routes: [Route]) {
+    public func navigate(to routes: [Route], dismissModals: Bool = true) {
         guard !routes.isEmpty else { return }
+        if dismissModals { dismissAllModals() }
         let previousDepth = depth
-        for route in routes {
-            path.append(route)
-            routeStack.push(route)
-        }
+        path.append(contentsOf: routes)
         recordEvent(.pushMultiple(routes), previousDepth: previousDepth)
     }
 
-    public func pop() {
+    public func pop(dismissModals: Bool = true) {
         guard !isEmpty else { return }
+        if dismissModals { dismissAllModals() }
         let previousDepth = depth
         path.removeLast()
-        routeStack.pop()
         recordEvent(.pop, previousDepth: previousDepth)
     }
 
-    public func pop(count: Int) {
+    public func pop(count: Int, dismissModals: Bool = true) {
         guard count > 0, !isEmpty else { return }
+        if dismissModals { dismissAllModals() }
         let actualCount = min(count, depth)
         let previousDepth = depth
         path.removeLast(actualCount)
-        routeStack.pop(count: actualCount)
         recordEvent(.popMultiple(actualCount), previousDepth: previousDepth)
     }
 
-    public func popToRoot() {
+    public func popToRoot(dismissModals: Bool = true) {
         guard !isEmpty else { return }
+        if dismissModals { dismissAllModals() }
         let previousDepth = depth
-        path = NavigationPath()
-        routeStack.popToRoot()
+        path.removeAll()
         recordEvent(.popToRoot, previousDepth: previousDepth)
     }
 
     @discardableResult
-    public func popTo(_ route: Route) -> Bool {
-        guard let index = routeStack.routes.lastIndex(of: route) else {
+    public func popTo(_ route: Route, dismissModals: Bool = true) -> Bool {
+        guard let index = path.lastIndex(of: route) else {
             return false
         }
+        if dismissModals { dismissAllModals() }
         let countToPop = depth - index - 1
         if countToPop > 0 {
-            pop(count: countToPop)
+            pop(count: countToPop, dismissModals: false)
         }
         return true
     }
 
-    public func replace(with routes: [Route]) {
+    public func replace(with routes: [Route], dismissModals: Bool = true) {
+        if dismissModals { dismissAllModals() }
         let previousDepth = depth
-        path = NavigationPath()
-        routeStack.popToRoot()
-        for route in routes {
-            path.append(route)
-            routeStack.push(route)
-        }
+        path = routes
         recordEvent(.replace(routes), previousDepth: previousDepth)
     }
 
-    public func reset() {
+    public func reset(dismissModals: Bool = true) {
+        if dismissModals { dismissAllModals() }
         let previousDepth = depth
-        path = NavigationPath()
-        routeStack.popToRoot()
+        path.removeAll()
         history.removeAll()
         recordEvent(.reset, previousDepth: previousDepth)
     }
@@ -103,28 +100,17 @@ public final class Navigator<Route: Routable>: ObservableObject {
         activeSheet = nil
     }
 
-    func syncPathFromNavigationStack(_ newPath: NavigationPath) {
-        let previousDepth = depth
-        let newDepth = newPath.count
+    public func openFullScreenCover(_ route: Route) {
+        activeFullScreenCover = route
+    }
 
-        guard newDepth != previousDepth else { return }
+    public func dismissFullScreenCover() {
+        activeFullScreenCover = nil
+    }
 
-        path = newPath
-
-        let popCount = previousDepth - newDepth
-
-        guard popCount > 0 else {
-            assertionFailure("System pushed routes outside Navigator — this shouldn't happen.")
-            return
-        }
-
-        if newDepth == 0 {
-            routeStack.popToRoot()
-            recordEvent(.popToRoot, previousDepth: previousDepth)
-        } else {
-            routeStack.pop(count: popCount)
-            recordEvent(popCount == 1 ? .pop : .popMultiple(popCount), previousDepth: previousDepth)
-        }
+    public func dismissAllModals() {
+        activeSheet = nil
+        activeFullScreenCover = nil
     }
 
     private func recordEvent(_ action: NavigationAction<Route>, previousDepth: Int) {
@@ -136,6 +122,23 @@ public final class Navigator<Route: Routable>: ObservableObject {
         history.append(event)
         if history.count > maxHistoryDepth {
             history.removeFirst(history.count - maxHistoryDepth)
+        }
+    }
+}
+
+extension Navigator where Route: ModalRoute {
+    public func present(_ route: Route) {
+        switch route.presentationStyle {
+        case .sheet: openSheet(route)
+        case .fullScreenCover: openFullScreenCover(route)
+        }
+    }
+
+    public func dismiss() {
+        if activeFullScreenCover != nil {
+            dismissFullScreenCover()
+        } else {
+            dismissSheet()
         }
     }
 }

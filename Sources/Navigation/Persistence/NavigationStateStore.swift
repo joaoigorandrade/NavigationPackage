@@ -41,7 +41,7 @@ public final class NavigationStateStore<Route: CodableRoutable> {
     }
 
     public func saveState(of navigator: Navigator<Route>) {
-        save(routes: navigator.routeStack.routes)
+        save(routes: navigator.path)
     }
 }
 
@@ -50,7 +50,7 @@ extension View {
         store: NavigationStateStore<Route>,
         navigator: Navigator<Route>
     ) -> some View {
-        self.onChange(of: navigator.routeStack.count) { _, _ in
+        self.onChange(of: navigator.path.count) { _, _ in
             if store.policy == .always {
                 store.saveState(of: navigator)
             }

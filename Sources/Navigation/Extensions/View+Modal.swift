@@ -1,28 +1,26 @@
 import SwiftUI
 
 extension View {
-    public func modalNavigation<Route: ModalRoute>(
-        _ modalNavigator: ModalNavigator<Route>
+    @MainActor
+    public func modalPresentation<Route: Routable>(
+        _ navigator: Navigator<Route>
     ) -> some View {
         self
             .sheet(item: Binding(
-                get: { modalNavigator.activeSheet },
-                set: { newValue in
-                    if newValue == nil { modalNavigator.dismiss() }
-                }
+                get: { navigator.activeSheet },
+                set: { if $0 == nil { navigator.dismissSheet() } }
             )) { route in
                 route.destination
+                    .environmentObject(navigator)
             }
             #if os(iOS)
             .fullScreenCover(item: Binding(
-                get: { modalNavigator.activeFullScreen },
-                set: { newValue in
-                    if newValue == nil { modalNavigator.dismiss() }
-                }
+                get: { navigator.activeFullScreenCover },
+                set: { if $0 == nil { navigator.dismissFullScreenCover() } }
             )) { route in
                 route.destination
+                    .environmentObject(navigator)
             }
             #endif
-            .environmentObject(modalNavigator)
     }
 }
