@@ -16,6 +16,7 @@ public struct NavigationStackWrapper<Route: Routable, Root: View>: View {
     public var body: some View {
         NavigationStack(path: $navigator.path) {
             root()
+                .environmentObject(navigator)
                 .navigationDestination(for: Route.self) { route in
                     LazyDestination {
                         route.destination
