@@ -112,7 +112,7 @@ private struct TestRouteDestination: View {
 
     var body: some View {
         Text("Custom Back")
-            .navigationBarBackButtonHidden(true)
+            
             .background(BackButtonVisibilityReader(recorder: recorder))
     }
 }

@@ -21,11 +21,11 @@ struct BackNavigationPolicyModifier<Route: Routable>: ViewModifier {
 
         case .disabled:
             content
-                .navigationBarBackButtonHidden(true)
+                
 
         case .conditional(let condition):
             content
-                .navigationBarBackButtonHidden(true)
+                
                 .toolbar {
                     if navigator.canPop() {
                         ToolbarItem(placement: .navigationBarLeading) {
@@ -45,7 +45,7 @@ struct BackNavigationPolicyModifier<Route: Routable>: ViewModifier {
 
         case .confirmationRequired(let message):
             content
-                .navigationBarBackButtonHidden(true)
+                
                 .toolbar {
                     if navigator.canPop() {
                         ToolbarItem(placement: .navigationBarLeading) {
