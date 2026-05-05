@@ -43,4 +43,25 @@ public final class TabNavigator<Tab: TabRoute, Route: Routable>: ObservableObjec
         switchTab(to: tab)
         navigator(for: tab).navigate(to: route)
     }
+
+    /// Handles a selection event from the tab bar. If the user re-taps the
+    /// already-selected tab, pops that tab's stack to root (when enabled) and
+    /// invokes `onReselect`. Otherwise switches to the new tab.
+    ///
+    /// Extracted so the binding logic of `NavigationTabView` is unit-testable
+    /// without instantiating a SwiftUI view hierarchy.
+    public func handleSelection(
+        _ newTab: Tab,
+        popToRootOnReselect: Bool = true,
+        onReselect: ((Tab) -> Void)? = nil
+    ) {
+        if newTab == selectedTab {
+            if popToRootOnReselect {
+                navigator(for: newTab).popToRoot()
+            }
+            onReselect?(newTab)
+        } else {
+            selectedTab = newTab
+        }
+    }
 }

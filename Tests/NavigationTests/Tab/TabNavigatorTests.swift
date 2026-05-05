@@ -103,4 +103,65 @@ struct TabNavigatorTests {
         #expect(tabNav.navigator(for: .feed).depth == 2)
         #expect(tabNav.navigator(for: .feed).currentRoute == .detail(id: 1))
     }
+
+    @MainActor
+    @Test("handleSelection switches tab when value changes")
+    func handleSelection_switchesTab() {
+        let tabNav = TabNavigator<MockTab, MockRoute>(initialTab: .feed)
+        tabNav.handleSelection(.search)
+        #expect(tabNav.selectedTab == .search)
+    }
+
+    @MainActor
+    @Test("handleSelection on active tab pops that tab to root by default")
+    func handleSelection_reselect_popsToRoot() {
+        let tabNav = TabNavigator<MockTab, MockRoute>(initialTab: .feed)
+        tabNav.navigator(for: .feed).navigate(to: [.home, .detail(id: 1)])
+        tabNav.handleSelection(.feed)
+        #expect(tabNav.navigator(for: .feed).isEmpty)
+    }
+
+    @MainActor
+    @Test("handleSelection re-tap does not affect other tabs")
+    func handleSelection_reselect_leavesOtherTabsAlone() {
+        let tabNav = TabNavigator<MockTab, MockRoute>(initialTab: .feed)
+        tabNav.navigator(for: .feed).navigate(to: .home)
+        tabNav.navigator(for: .search).navigate(to: .settings)
+        tabNav.handleSelection(.feed)
+        #expect(tabNav.navigator(for: .feed).isEmpty)
+        #expect(tabNav.navigator(for: .search).depth == 1)
+    }
+
+    @MainActor
+    @Test("handleSelection invokes onReselect with tab when re-tapped")
+    func handleSelection_reselect_invokesOnReselect() {
+        let tabNav = TabNavigator<MockTab, MockRoute>(initialTab: .feed)
+        var received: [MockTab] = []
+        tabNav.handleSelection(.feed, onReselect: { received.append($0) })
+        #expect(received == [.feed])
+    }
+
+    @MainActor
+    @Test("handleSelection does not invoke onReselect on tab switch")
+    func handleSelection_switch_skipsOnReselect() {
+        let tabNav = TabNavigator<MockTab, MockRoute>(initialTab: .feed)
+        var invoked = 0
+        tabNav.handleSelection(.search, onReselect: { _ in invoked += 1 })
+        #expect(invoked == 0)
+    }
+
+    @MainActor
+    @Test("handleSelection skips popToRoot when disabled")
+    func handleSelection_popToRootDisabled_keepsStack() {
+        let tabNav = TabNavigator<MockTab, MockRoute>(initialTab: .feed)
+        tabNav.navigator(for: .feed).navigate(to: .home)
+        var invoked = 0
+        tabNav.handleSelection(
+            .feed,
+            popToRootOnReselect: false,
+            onReselect: { _ in invoked += 1 }
+        )
+        #expect(tabNav.navigator(for: .feed).depth == 1)
+        #expect(invoked == 1)
+    }
 }

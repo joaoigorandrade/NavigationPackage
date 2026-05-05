@@ -10,4 +10,6 @@ public protocol TabRoute: Hashable, CaseIterable, Identifiable {
 
 extension TabRoute {
     public var id: Int { hashValue }
+
+    public var tabRole: TabRole? { nil }
 }

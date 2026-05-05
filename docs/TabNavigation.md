@@ -32,17 +32,52 @@ enum AppTab: TabRoute {
 
 ## Setup
 
+The simplest setup is `NavigationTabView`, a one-liner wrapper that builds a tab bar from a `TabNavigator`:
+
 ```swift
 @StateObject private var tabNavigator = TabNavigator<AppTab, AppRoute>(initialTab: .feed)
 
+var body: some View {
+    NavigationTabView(tabNavigator)
+}
+```
+
+`NavigationTabView` does the following automatically:
+
+- builds one `NavigationStackWrapper` per tab using the tab's own `Navigator`
+- injects each navigator into its tab's environment
+- pops the active tab to root when the user re-taps it
+- uses the iOS 18+ `Tab(value:role:content:label:)` initializer to avoid the iOS 18 `NavigationStack(path:) + tabItem` double-push bug
+- honours `TabRoute.tabRole` (default `nil`), so a tab can opt into `.search` for the iOS 26 Liquid Glass search tab
+
+### Customising re-tap behaviour
+
+```swift
+NavigationTabView(
+    tabNavigator,
+    popToRootOnReselect: true,           // default
+    onReselect: { tab in
+        // e.g. scroll-to-top — fired *after* popToRoot
+        NotificationCenter.default.post(name: .scrollToTop, object: tab)
+    }
+)
+```
+
+Set `popToRootOnReselect: false` to opt out of automatic pop and handle the re-tap yourself in `onReselect`.
+
+### Manual setup (if you need full control)
+
+```swift
 TabView(selection: $tabNavigator.selectedTab) {
     ForEach(AppTab.allCases, id: \.self) { tab in
-        NavigationStackWrapper(navigator: tabNavigator.navigator(for: tab)) {
-            tab.tabContent
+        Tab(value: tab, role: tab.tabRole) {
+            NavigationStackWrapper(navigator: tabNavigator.navigator(for: tab)) {
+                tab.tabContent
+            }
+            .withNavigator(tabNavigator.navigator(for: tab))
+        } label: {
+            tab.tabLabel
         }
-        .withNavigator(tabNavigator.navigator(for: tab))
-        .tabItem { tab.tabLabel }
-        .tag(tab)
     }
 }
 ```

@@ -24,6 +24,7 @@ Protocol for tab definitions.
 - Conforms to: `Hashable`, `CaseIterable`, `Identifiable`
 - Required: `var tabLabel: some View { get }`
 - Required: `var tabContent: some View { get }`
+- Optional: `var tabRole: TabRole? { get }` (defaults to `nil`; e.g. `.search` for iOS 26)
 
 ## Classes
 
@@ -66,6 +67,13 @@ Protocol for tab definitions.
 - `switchTab(to:)`, `navigator(for:)`
 - `resetCurrentTab()`, `resetAllTabs()`
 - `navigate(to:inTab:)`
+- `handleSelection(_:popToRootOnReselect:onReselect:)` — used by `NavigationTabView` to pop the active tab to root on re-tap
+
+### NavigationTabView\<Tab: TabRoute, Route: Routable\>
+SwiftUI `View` — drop-in tab bar built on top of `TabNavigator`. Uses the iOS 18+ `Tab(value:role:content:label:)` initializer (avoids the legacy `tabItem` + `NavigationStack(path:)` double-push bug), embeds each tab in a `NavigationStackWrapper`, injects each `Navigator` into its tab's environment, and pops the active tab to root when re-tapped.
+
+**Init:**
+- `init(_ tabNavigator:, popToRootOnReselect: Bool = true, onReselect: ((Tab) -> Void)? = nil)`
 
 ### DeepLinkHandler\<Route: URLRoutable\>
 URL-to-route resolver.
