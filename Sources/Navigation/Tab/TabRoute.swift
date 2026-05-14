@@ -4,8 +4,8 @@ public protocol TabRoute: Hashable, CaseIterable, Identifiable {
     associatedtype TabLabel: View
     associatedtype TabContent: View
 
-    @ViewBuilder var tabLabel: TabLabel { get }
-    @ViewBuilder var tabContent: TabContent { get }
+    @MainActor @ViewBuilder var tabLabel: TabLabel { get }
+    @MainActor @ViewBuilder var tabContent: TabContent { get }
 }
 
 extension TabRoute {
