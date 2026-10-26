@@ -27,10 +27,16 @@ public struct NavigationStackWrapper<Route: Routable, Root: View>: View {
                 .environment(\.transitionNamespace, transitionNS)
         }
         .sheet(item: sheetBinding) { route in
-            route.destination
-                .modifier(SelfSizingSheetModifier())
-                .environmentObject(navigator)
-                .environment(\.transitionNamespace, transitionNS)
+            if let modalRoute = route as? any ModalRoute, modalRoute.presentationStyle == .selfSizingSheet {
+                route.destination
+                    .modifier(SelfSizingSheetModifier())
+                    .environmentObject(navigator)
+                    .environment(\.transitionNamespace, transitionNS)
+            } else {
+                route.destination
+                    .environmentObject(navigator)
+                    .environment(\.transitionNamespace, transitionNS)
+            }
         }
         #if os(iOS)
         .fullScreenCover(item: fullScreenCoverBinding) { route in

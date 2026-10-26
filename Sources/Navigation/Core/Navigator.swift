@@ -129,7 +129,7 @@ public final class Navigator<Route: Routable>: ObservableObject {
 extension Navigator where Route: ModalRoute {
     public func present(_ route: Route) {
         switch route.presentationStyle {
-        case .sheet: openSheet(route)
+        case .sheet, .selfSizingSheet: openSheet(route)
         case .fullScreenCover: openFullScreenCover(route)
         }
     }

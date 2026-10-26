@@ -10,9 +10,14 @@ extension View {
                 get: { navigator.activeSheet },
                 set: { if $0 == nil { navigator.dismissSheet() } }
             )) { route in
-                route.destination
-                    .environmentObject(navigator)
-                    .modifier(SelfSizingSheetModifier())
+                if let modalRoute = route as? any ModalRoute, modalRoute.presentationStyle == .selfSizingSheet {
+                    route.destination
+                        .environmentObject(navigator)
+                        .modifier(SelfSizingSheetModifier())
+                } else {
+                    route.destination
+                        .environmentObject(navigator)
+                }
             }
             #if os(iOS)
             .fullScreenCover(item: Binding(
